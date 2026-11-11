@@ -1,0 +1,290 @@
+import { Cheesecake } from '../game_objects/Cheesecake';
+import { PanelBuilder, PanelRotator } from '../game_objects/PanelRotator';
+import { Pirates } from '../game_objects/Pirates';
+import { GameOfThrones } from '../game_objects/GameOfThrones';
+import { BaseScene } from './BaseScene';
+
+import { GameObjects, Input } from 'phaser'
+import { Coop } from '../game_objects/Coop';
+import { Selfies } from '../game_objects/Selfies';
+
+export class Game extends BaseScene
+{
+    camera: Phaser.Cameras.Scene2D.Camera;
+
+    panelRotator: PanelRotator;
+    panelBuilder: PanelBuilder;
+
+    leftKey: Input.Keyboard.Key | undefined;
+    rightKey: Input.Keyboard.Key | undefined;
+
+    isLeftKeyDown: boolean = false;
+    isPreviousLeftKeyDown: boolean = false;
+
+    isRightKeyDown: boolean = false;
+    isPreviousRightKeyDown: boolean = false;
+
+    //currentDate: Date = new Date(new Date().toLocaleDateString());
+    currentDate: Date = new Date(2026, 12, 25);
+    currentDisplayedDate?: string = undefined;
+
+    affirmationDisplayed: boolean = false;
+    affirmationBackground: GameObjects.Rectangle;
+    affirmationPaper: GameObjects.Rectangle;
+    affirmationText: GameObjects.Text;
+    affirmationCloseBackground: GameObjects.Rectangle;
+    affirmationClose: GameObjects.Image;
+    affirmationTweenDuration: number = 250;
+
+    leftArrow: GameObjects.Image;
+    rightArrow: GameObjects.Image;
+
+    constructor ()
+    {
+        super('Game');
+    }
+
+    preload()
+    {
+
+
+        this.load.image('CheesecakeBackground', 'assets/CheesecakeBackground.png');
+        this.load.image('CheesecakeUs', 'assets/CheesecakeUsWalking.png');
+    }
+
+    create ()
+    {
+        super.create();
+
+        this.camera = this.cameras.main;
+        this.camera.setBackgroundColor(0xffffff);
+
+        this.panelBuilder = new PanelBuilder(this)
+                                .add(new Cheesecake(this, 0, 0).create(this.currentDate))
+                                .add(new GameOfThrones(this, 0, 0).create(this.currentDate))
+                                .add(new Pirates(this, 0, 0).create(this.currentDate))
+                                .add(new Coop(this, 0, 0).create(this.currentDate))
+                                .add(new Selfies(this, 0, 0).create(this.currentDate));
+
+        this.panelRotator = new PanelRotator(this, this.panelBuilder.toConfig()).create();
+
+        this.leftKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+        this.rightKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+
+        this.affirmationBackground = this.add.rectangle(0, 0, this.getGameWidth(), this.getGameHeight(), 0x000, 0.0).setOrigin(0, 0);
+        this.affirmationPaper = this.add.rectangle(0, 0, this.getGameWidth() * 0.80, this.getGameHeight() * 0.65, 0xB79F7C, 0.0).setOrigin(0, 0);    
+        this.affirmationPaper.setPosition((this.getGameWidth() / 2) - (this.affirmationPaper.displayWidth / 2), (this.getGameHeight() / 2) - (this.affirmationPaper.displayHeight / 2));
+        
+        this.affirmationCloseBackground = this.add.rectangle(0, 0, 64, 64, 0xFF0000, 0.0).setOrigin(0, 0);
+        this.affirmationClose = this.add.image(0, 0, "cross").setOrigin(0, 0).setAlpha(0.0).setScale(0.75, 0.75);
+
+        this.affirmationCloseBackground.setPosition(
+            this.affirmationPaper.x + this.affirmationPaper.displayWidth - this.affirmationCloseBackground.displayWidth, 
+            this.affirmationPaper.y
+        ).setName("closeAffirmation");
+
+        this.affirmationClose.setPosition(
+            this.affirmationCloseBackground.x + (this.affirmationCloseBackground.displayWidth / 2) - (this.affirmationClose.displayWidth / 2),
+            this.affirmationCloseBackground.y + (this.affirmationCloseBackground.displayHeight / 2) - (this.affirmationClose.displayWidth / 2),
+        );
+
+        this.affirmationText = this.add.text(this.affirmationPaper.x + 30,  this.affirmationPaper.y + 60, '', {fontFamily: 'Arial', fontSize: 48, color: '#000000', wordWrap: {width: this.affirmationPaper.displayWidth - 60, useAdvancedWrap: true}})    
+
+        this.leftArrow = this.add.image(0, 0, 'arrowLeft');
+        this.leftArrow.setPosition(this.getGameWidth() * 0.10, this.getGameHeight() * 0.50);
+        this.leftArrow.setName('left');
+        this.leftArrow.setInteractive({useHandCursor: true});
+
+        this.rightArrow = this.add.image(0, 0, 'arrowRight');
+        this.rightArrow.setPosition(this.getGameWidth() * 0.90, this.getGameHeight() * 0.50);
+        this.rightArrow.setName('right');
+        this.rightArrow.setInteractive({useHandCursor: true});
+
+        this.input.on('gameobjectup', (_: Object, gameObject: Phaser.GameObjects.GameObject) => 
+        {
+            if(gameObject.name == "closeAffirmation") 
+            {
+                this.closeAffirmation(gameObject);
+                return;
+            }
+
+            if(gameObject.name == 'left')
+            {
+                this.panelRotator.left();
+                return;
+            }
+
+            if(gameObject.name == 'right')
+            {
+                this.panelRotator.right();
+                return;
+            }
+
+            if(this.currentDate >= new Date(gameObject.name))
+            {
+                this.panelRotator.click(gameObject.name, (affirmation: string) =>
+                {
+                    this.openAffirmation(gameObject, affirmation);
+                });
+            }
+        });
+
+        this.input.on('gameobjectover', (_: Object, gameObject: Phaser.GameObjects.GameObject) => 
+        {
+            this.panelRotator.over(gameObject.name);
+        });
+
+        this.input.on('gameobjectout', (_: Object, gameObject: Phaser.GameObjects.GameObject) => 
+        {
+            this.panelRotator.out(gameObject.name);
+        });
+
+
+
+    }
+
+    private openAffirmation(gameObject: GameObjects.GameObject, affirmation: string) 
+    {
+        if(this.affirmationDisplayed)
+        {
+            return;
+        }
+
+        this.leftArrow.setVisible(false);
+        this.rightArrow.setVisible(false);
+
+        this.affirmationDisplayed = true;
+
+        this.tweens.add({
+            targets: this.affirmationBackground,
+            fillAlpha: { from: 0, to: 0.5 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        this.tweens.add({
+            targets: this.affirmationCloseBackground,
+            fillAlpha: { from: 0, to: 1.0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        this.tweens.add({
+            targets: this.affirmationClose,
+            alpha: { from: 0, to: 1.0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        let paperTween = this.tweens.add({
+            targets: this.affirmationPaper,
+            fillAlpha: { from: 0, to: 1 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        paperTween.onCompleteHandler = () => 
+        {
+            this.tweens.killTweensOf([this.affirmationPaper, this.affirmationClose, this.affirmationCloseBackground, this.affirmationBackground]);
+            this.affirmationText.text = affirmation;
+
+            this.panelRotator.off();
+            this.panelRotator.out(gameObject.name);
+
+            this.currentDisplayedDate = gameObject.name;
+
+            this.affirmationCloseBackground.setInteractive({useHandCursor: true});
+        };
+    }
+
+    private closeAffirmation(gameObject: GameObjects.GameObject) {
+
+        this.tweens.add({
+            targets: this.affirmationBackground,
+            fillAlpha: { from: 0.5, to: 0.0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        this.tweens.add({
+            targets: this.affirmationCloseBackground,
+            fillAlpha: { from: 1.0, to: 0.0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        this.tweens.add({
+            targets: this.affirmationClose,
+            alpha: { from: 1.0, to: 0.0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        let paperTween = this.tweens.add({
+            targets: this.affirmationPaper,
+            fillAlpha: { from: 1.0, to: 0 },
+            ease: 'Linear',
+            duration: this.affirmationTweenDuration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        this.affirmationText.text = '';
+
+        paperTween.onCompleteHandler = () => {
+            this.tweens.killTweensOf([this.affirmationPaper, this.affirmationClose, this.affirmationCloseBackground, this.affirmationBackground]);
+
+            this.panelRotator.on();
+            this.panelRotator.closeAffirmation(this.currentDisplayedDate!)
+
+            this.affirmationCloseBackground.disableInteractive(true);
+
+            this.affirmationDisplayed = false;
+
+            this.leftArrow.setVisible(true);
+            this.rightArrow.setVisible(true);
+        };
+    }
+
+    update(_: number, delta: number): void 
+    {
+        if(this.leftKey)
+        {
+            this.isPreviousLeftKeyDown = this.isLeftKeyDown;
+            this.isLeftKeyDown = this.leftKey.isDown;
+        }
+
+        if(this.rightKey)
+        {
+            this.isPreviousRightKeyDown = this.isRightKeyDown;
+            this.isRightKeyDown = this.rightKey.isDown;
+        }
+
+        if(!this.affirmationDisplayed)
+        {
+            if(this.isPreviousLeftKeyDown && !this.isLeftKeyDown)
+            {
+                this.panelRotator.left();
+            }
+
+            if(this.isPreviousRightKeyDown && !this.isRightKeyDown)
+            {
+                this.panelRotator.right();
+            }
+        }
+    }
+}
