@@ -124,7 +124,7 @@ export class Cheesecake extends BasePanel
 
     closeAffirmation(date: string): void 
     {
-        if(date == '12/1/2026')
+        if(date == `12/1/${CURRENT_YEAR}`)
         {
             this.us.setPosition(this.x + this.usXOffset, this.y + this.usYOffset);
         }

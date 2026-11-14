@@ -1,7 +1,7 @@
 import { Cheesecake } from '../game_objects/Cheesecake';
 import { PanelBuilder, PanelRotator } from '../game_objects/PanelRotator';
-import { Pirates } from '../game_objects/Pirates';
-import { GameOfThrones } from '../game_objects/GameOfThrones';
+import { Games } from '../game_objects/Games';
+import { Shows } from '../game_objects/Shows';
 import { BaseScene } from './BaseScene';
 
 import { GameObjects, Input } from 'phaser'
@@ -50,6 +50,10 @@ export class Game extends BaseScene
 
         this.load.image('CheesecakeBackground', 'assets/CheesecakeBackground.png');
         this.load.image('CheesecakeUs', 'assets/CheesecakeUsWalking.png');
+
+        this.load.image('ShowsBackground', 'assets/ShowsBackground.png');
+        this.load.image('PirateBoat', 'assets/PirateBoat.png');
+        this.load.spritesheet('PlumeSmoke', 'assets/PlumeSmoke.png', {frameWidth: 64, frameHeight: 120});
     }
 
     create ()
@@ -61,8 +65,8 @@ export class Game extends BaseScene
 
         this.panelBuilder = new PanelBuilder(this)
                                 .add(new Cheesecake(this, 0, 0).create(this.currentDate))
-                                .add(new GameOfThrones(this, 0, 0).create(this.currentDate))
-                                .add(new Pirates(this, 0, 0).create(this.currentDate))
+                                .add(new Shows(this, 0, 0).create(this.currentDate))
+                                .add(new Games(this, 0, 0).create(this.currentDate))
                                 .add(new Coop(this, 0, 0).create(this.currentDate))
                                 .add(new Selfies(this, 0, 0).create(this.currentDate));
 
@@ -138,9 +142,6 @@ export class Game extends BaseScene
         {
             this.panelRotator.out(gameObject.name);
         });
-
-
-
     }
 
     private openAffirmation(gameObject: GameObjects.GameObject, affirmation: string) 

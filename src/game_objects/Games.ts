@@ -3,7 +3,7 @@ import { BaseScene } from "../scenes/BaseScene";
 import { BasePanel } from "./BasePanel";
 
 
-export class GameOfThrones extends BasePanel 
+export class Games extends BasePanel 
 {
     text1: GameObjects.Text;
     text2: GameObjects.Text;
@@ -13,6 +13,7 @@ export class GameOfThrones extends BasePanel
 
     background: GameObjects.Image;
 
+
     constructor(scene: BaseScene, x: number, y: number)
     {
         super(scene, x, y);   
@@ -21,7 +22,7 @@ export class GameOfThrones extends BasePanel
     create(currentDate: Date) : BasePanel
     {
         super.create(currentDate);
-
+        
         return this;
     }
 
