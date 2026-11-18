@@ -54,6 +54,8 @@ export class Game extends BaseScene
         this.load.image('ShowsBackground', 'assets/ShowsBackground.png');
         this.load.image('PirateBoat', 'assets/PirateBoat.png');
         this.load.spritesheet('PlumeSmoke', 'assets/PlumeSmoke.png', {frameWidth: 64, frameHeight: 120});
+
+        this.load.image('SelfiesBackground', 'assets/SelfiesBackground.png');
     }
 
     create ()

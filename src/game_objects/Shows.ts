@@ -31,7 +31,7 @@ export class Shows extends BasePanel
 
         this.background = this.scene.add.image(this.x, this.y, 'ShowsBackground').setOrigin(0, 0);
 
-        this.pirateBoatXOffset = this.scene.getGameWidth() * 0.22;
+        this.pirateBoatXOffset = this.scene.getGameWidth() * 0.66;
         this.pirateBoatYOffset = this.scene.getGameHeight() * 0.48;
         this.pirateBoat = this.scene.add.image(this.x + this.pirateBoatXOffset, this.y + this.pirateBoatYOffset, 'PirateBoat').setOrigin(0, 0).setScale(3.5, 3.5);
 
@@ -103,7 +103,7 @@ export class Shows extends BasePanel
         {
             let xTween = this.scene.add.tween({
                 targets: this.pirateBoat,
-                x: this.scene.getGameWidth() * 0.66,
+                x: this.scene.getGameWidth() * 0.22,
                 ease: 'Linear',
                 duration: 1200,
                 repeat: 0,
